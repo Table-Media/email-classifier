@@ -43,18 +43,30 @@ def load_classifier(model_path: Path):
         logger.error(f"Failed to load model: {e}")
         raise
 
-def predict_texts(classifier, texts: List[str]) -> List[str]:
+def predict_texts(classifier, texts: List[str], batch_size: int = 1000) -> List[str]:
     """Classify a list of German texts using the loaded model.
     
     Args:
         classifier: The trained classifier model
         texts: List of German text strings to classify
+        batch_size: Number of texts to process at once
     
     Returns:
         List of predicted classifications
     """
-    logger.info(f"Classifying {len(texts)} texts")
-    return classifier.predict(texts)
+    logger.info(f"Classifying {len(texts)} texts in batches of {batch_size}")
+    
+    # Use joblib parallel predictions if available
+    if hasattr(classifier, 'n_jobs'):
+        classifier.n_jobs = -1  # Use all cores
+        
+    predictions = []
+    for i in range(0, len(texts), batch_size):
+        batch = texts[i:i + batch_size]
+        predictions.extend(classifier.predict(batch))
+        logger.info(f"Processed {min(i + batch_size, len(texts))}/{len(texts)} texts")
+    
+    return predictions
 
 @click.command()
 @click.option(
@@ -84,18 +96,30 @@ def predict_texts(classifier, texts: List[str]) -> List[str]:
     default="predicted_label",
     help="Name of column to store predictions"
 )
+@click.option(
+    "--batch-size",
+    type=int,
+    default=1000,
+    help="Number of texts to process at once (default: 1000)"
+)
 def main(
     model_path: Path,
     input_csv: Path,
     output_csv: Optional[Path],
     text_column: str,
-    prediction_column: str
+    prediction_column: str,
+    batch_size: int
 ):
     """Classify German texts from a CSV file using a trained model."""
     try:
-        # Read input CSV
+        # Read input CSV with optimized settings
         logger.info(f"Reading input from {input_csv}")
-        df = pd.read_csv(input_csv)
+        df = pd.read_csv(
+            input_csv,
+            engine='c',  # Use C engine for faster parsing
+            dtype={text_column: 'string'},  # Explicit string type
+            memory_map=True  # Memory mapping for large files
+        )
         
         # Validate text column exists
         if text_column not in df.columns:
@@ -104,12 +128,16 @@ def main(
         # Load model and predict
         classifier = load_classifier(model_path)
         texts = df[text_column].tolist()
-        predictions = predict_texts(classifier, texts)
+        predictions = predict_texts(classifier, texts, batch_size)
         
         # Save predictions
         df[prediction_column] = predictions
         output_path = output_csv if output_csv else input_csv
-        df.to_csv(output_path, index=False)
+        df.to_csv(
+            output_path,
+            index=False,
+            chunksize=10000  # Write in chunks for large files
+        )
         logger.info(f"Saved predictions to {output_path}")
         
         # Show sample results
