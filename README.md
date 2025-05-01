@@ -88,29 +88,42 @@ This will:
 
 ### 2. Classify New Texts
 
-#### Classify Texts from a CSV File
+#### Classify Texts
 
+You can classify texts in two ways:
+
+1. **Single Text Prediction** (for testing or integration):
 ```bash
-uv run predict.py --input-csv your_texts.csv
+uv run predict.py predict-single "Ihr Text hier..."
 ```
 
-Optional arguments:
+2. **Batch Prediction from CSV File**:
+```bash
+uv run predict.py predict-batch --input-csv your_texts.csv
+```
+
+Common optional arguments:
 - `--model-path`: Path to model file (default: data/output.joblib)
 - `--output-csv`: Output file path (default: data/out.csv)
 - `--text-column`: Column name containing texts (default: "text")
 - `--prediction-column`: Column name for predictions (default: "predicted_label")
 
-Example with all options:
-```bash
-uv run predict.py --input-csv emails.csv
+Examples:
 
-# Or with all options:
-uv run predict.py \
+Single text prediction:
+```bash
+uv run predict.py predict-single "Sehr geehrter Herr Müller, ..." --model-path data/custom_model.joblib
+```
+
+Batch prediction with all options:
+```bash
+uv run predict.py predict-batch \
   --input-csv emails.csv \
   --output-csv data/classified_emails.csv \
   --text-column email_body \
   --prediction-column category \
-  --batch-size 5000
+  --batch-size 5000 \
+  --model-path data/custom_model.joblib
 ```
 
 ## Performance
