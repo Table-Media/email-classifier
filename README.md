@@ -43,7 +43,7 @@ This will:
 - Load the training data
 - Train a text classification model
 - Evaluate the model on a test split
-- Save the trained model to `german_text_classifier.joblib` by default
+- Save the trained model to `data/output.joblib` by default
 - Display classification report with performance metrics
 
 ### 2. Classify New Texts
@@ -55,18 +55,22 @@ uv run predict.py --input-csv your_texts.csv
 ```
 
 Optional arguments:
-- `--model-path`: Path to model file (default: german_text_classifier.joblib)
-- `--output-csv`: Output file path (default: overwrites input)
+- `--model-path`: Path to model file (default: data/output.joblib)
+- `--output-csv`: Output file path (default: data/out.csv)
 - `--text-column`: Column name containing texts (default: "text")
 - `--prediction-column`: Column name for predictions (default: "predicted_label")
 
 Example with all options:
 ```bash
+uv run predict.py --input-csv emails.csv
+
+# Or with all options:
 uv run predict.py \
   --input-csv emails.csv \
-  --output-csv classified_emails.csv \
+  --output-csv data/classified_emails.csv \
   --text-column email_body \
-  --prediction-column category
+  --prediction-column category \
+  --batch-size 5000
 ```
 
 ## Performance
