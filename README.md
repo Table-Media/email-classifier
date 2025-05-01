@@ -29,6 +29,46 @@ This package includes the following files:
 3. `predict.py` - Script for batch predictions on CSV files
 4. `README.md` - This documentation file
 
+## CSV File Preparation
+
+For both training and prediction, the CSV files should follow these guidelines:
+
+### Training CSV Format
+- Must contain exactly two columns:
+  - `text`: The raw email text content
+  - `label`: One of the supported categories (see list above)
+- UTF-8 encoding recommended
+- One email per row
+- Example:
+  ```csv
+  text,label
+  "Sehr geehrter Herr Müller,...",menschliche_antwort
+  "Ihre Rechnung Nr. 12345...",rechnung
+  ```
+
+### Prediction CSV Format
+- Must contain at least one column with email text
+- Default expects column named `text` (configurable via `--text-column`)
+- Can contain additional metadata columns
+- Example:
+  ```csv
+  id,text,date
+  1,"Betreff: Ihr Support-Ticket...",2023-01-01
+  2,"Newsletter März 2023...",2023-03-01
+  ```
+
+### Tips for Good Results
+1. Clean your data by:
+   - Removing email signatures
+   - Trimming whitespace
+   - Normalizing encodings
+2. For training data:
+   - Include diverse examples for each category
+   - Balance categories where possible
+3. For prediction:
+   - Process emails in their raw form
+   - Preserve original line breaks and formatting
+
 ## Quick Start
 
 ### 1. Train the Model
