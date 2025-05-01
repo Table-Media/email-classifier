@@ -90,7 +90,8 @@ def predict_texts(classifier, texts: List[str], batch_size: int = 1000) -> List[
 @click.option(
     "--output-csv",
     type=click.Path(path_type=Path),
-    help="Path to output CSV file (default: overwrite input)"
+    default="data/out.csv",
+    help="Path to output CSV file (default: data/out.csv)"
 )
 @click.option(
     "--text-column",
@@ -138,7 +139,7 @@ def main(
         
         # Save predictions
         df[prediction_column] = predictions
-        output_path = output_csv if output_csv else input_csv
+        output_path = output_csv
         df.to_csv(
             output_path,
             index=False,
