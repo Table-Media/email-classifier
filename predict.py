@@ -74,7 +74,12 @@ def predict_texts(classifier, texts: List[str], batch_size: int = 1000) -> List[
     
     return predictions
 
-@click.command()
+@click.group()
+def cli():
+    """German Email Classifier CLI"""
+    pass
+
+@cli.command()
 @click.option(
     "-m", "--model-path",
     type=click.Path(path_type=Path),
@@ -114,7 +119,7 @@ def predict_texts(classifier, texts: List[str], batch_size: int = 1000) -> List[
     help="Number of texts to process at once",
     show_default=True
 )
-def main(
+def predict_batch(
     model_path: Path,
     input_csv: Path,
     output_csv: Optional[Path],
@@ -187,5 +192,24 @@ def main(
         logger.error(f"Classification failed: {e}")
         raise click.Abort()
 
+@cli.command()
+@click.option(
+    "-m", "--model-path",
+    type=click.Path(path_type=Path),
+    default="data/output.joblib",
+    help="Path to trained model file (.joblib)",
+    show_default=True
+)
+@click.argument('text', required=True)
+def predict_single(model_path: Path, text: str):
+    """Classify a single German text using a trained model."""
+    try:
+        classifier = load_classifier(model_path)
+        prediction = classifier.predict([text])[0]
+        console.print(f"\n[bold]Prediction:[/bold] {prediction}")
+    except Exception as e:
+        logger.error(f"Classification failed: {e}")
+        raise click.Abort()
+
 if __name__ == "__main__":
-    main()
+    cli()
