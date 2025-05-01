@@ -27,9 +27,36 @@ console = Console()
 def train_classifier(csv_path: Path, model_path: Path):
     """Train and save a text classifier model"""
     try:
-        data = pd.read_csv(csv_path)
+        # Try reading with different encodings and more error-tolerant settings
+        try:
+            data = pd.read_csv(
+                csv_path,
+                encoding='utf-8',
+                on_bad_lines='warn',
+                quotechar='"',
+                doublequote=True,
+                escapechar='\\'
+            )
+        except UnicodeDecodeError:
+            data = pd.read_csv(
+                csv_path,
+                encoding='latin1',
+                on_bad_lines='warn',
+                quotechar='"',
+                doublequote=True,
+                escapechar='\\'
+            )
+            
+        # Verify required columns exist
+        if 'text' not in data.columns or 'label' not in data.columns:
+            raise ValueError("CSV must contain 'text' and 'label' columns")
+            
         X = data['text']
         y = data['label']
+        
+        # Log basic stats
+        console.print(f"Loaded {len(data)} rows")
+        console.print(f"Label distribution:\n{y.value_counts()}")
 
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
@@ -47,9 +74,15 @@ def train_classifier(csv_path: Path, model_path: Path):
         joblib.dump(classifier, model_path)
         logger.info(f"Model saved to {model_path}")
         
+    except pd.errors.ParserError as e:
+        logger.error(f"CSV parsing error: {e}\nTry checking for unclosed quotes or special characters in the data.")
+        raise click.ClickException("Failed to parse CSV file")
+    except ValueError as e:
+        logger.error(f"Data validation error: {e}")
+        raise click.ClickException(str(e))
     except Exception as e:
-        logger.error(f"Error training classifier: {e}")
-        raise
+        logger.error(f"Error training classifier: {e}", exc_info=True)
+        raise click.ClickException("Training failed - see logs for details")
 
 @click.command()
 @click.argument('csv_path', type=click.Path(exists=True, path_type=Path))
