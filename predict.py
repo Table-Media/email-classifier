@@ -76,38 +76,43 @@ def predict_texts(classifier, texts: List[str], batch_size: int = 1000) -> List[
 
 @click.command()
 @click.option(
-    "--model-path",
+    "-m", "--model-path",
     type=click.Path(path_type=Path),
     default="data/output.joblib",
-    help="Path to trained model file (.joblib)"
+    help="Path to trained model file (.joblib)",
+    show_default=True
 )
 @click.option(
-    "--input-csv",
+    "-i", "--input-csv",
     type=click.Path(path_type=Path),
     required=True,
     help="Path to input CSV file"
 )
 @click.option(
-    "--output-csv",
+    "-o", "--output-csv",
     type=click.Path(path_type=Path),
     default="data/out.csv",
-    help="Path to output CSV file (default: data/out.csv)"
+    help="Path to output CSV file",
+    show_default=True
 )
 @click.option(
-    "--text-column",
+    "-t", "--text-column",
     default="text",
-    help="Name of column containing text to classify"
+    help="Name of column containing text to classify",
+    show_default=True
 )
 @click.option(
-    "--prediction-column",
+    "-p", "--prediction-column",
     default="predicted_label",
-    help="Name of column to store predictions"
+    help="Name of column to store predictions",
+    show_default=True
 )
 @click.option(
-    "--batch-size",
+    "-b", "--batch-size",
     type=int,
     default=1000,
-    help="Number of texts to process at once (default: 1000)"
+    help="Number of texts to process at once",
+    show_default=True
 )
 def main(
     model_path: Path,
