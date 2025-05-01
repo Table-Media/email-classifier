@@ -86,7 +86,7 @@ def train_classifier(csv_path: Path, model_path: Path):
 
 @click.command()
 @click.argument('csv_path', type=click.Path(exists=True, path_type=Path))
-@click.argument('model_path', type=click.Path(path_type=Path), default=Path("german_text_classifier.joblib"))
+@click.argument('model_path', type=click.Path(path_type=Path), default=Path("data/model.joblib"))
 def main(csv_path: Path, model_path: Path):
     """Train a text classifier from CSV data"""
     train_classifier(csv_path, model_path)
