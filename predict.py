@@ -152,11 +152,36 @@ def main(
         )
         logger.info(f"Saved predictions to {output_path}")
         
-        # Show sample results
-        console.print("\n[bold]Sample Classification Results:[/bold]")
-        for _, row in df.head(5).iterrows():
-            console.print(f"- [cyan]Text:[/cyan] {row[text_column][:50]}...")
-            console.print(f"  [green]Prediction:[/green] {row[prediction_column]}\n")
+        # Check if ground truth labels exist
+        if 'label' in df.columns:
+            from sklearn.metrics import classification_report
+            console.print("\n[bold]Classification Report:[/bold]")
+            report = classification_report(
+                df['label'],
+                df[prediction_column],
+                target_names=classifier.classes_,
+                digits=3
+            )
+            console.print(report)
+            
+            # Calculate and show accuracy
+            accuracy = (df['label'] == df[prediction_column]).mean()
+            console.print(f"\n[bold]Overall Accuracy:[/bold] {accuracy:.1%}")
+            
+            # Show confusion examples
+            incorrect = df[df['label'] != df[prediction_column]]
+            if not incorrect.empty:
+                console.print("\n[bold]Sample Incorrect Predictions:[/bold]")
+                for _, row in incorrect.head(3).iterrows():
+                    console.print(f"- [cyan]Text:[/cyan] {row[text_column][:50]}...")
+                    console.print(f"  [red]Expected:[/red] {row['label']}")
+                    console.print(f"  [green]Predicted:[/green] {row[prediction_column]}\n")
+        else:
+            # Show sample results if no labels available
+            console.print("\n[bold]Sample Classification Results:[/bold]")
+            for _, row in df.head(5).iterrows():
+                console.print(f"- [cyan]Text:[/cyan] {row[text_column][:50]}...")
+                console.print(f"  [green]Prediction:[/green] {row[prediction_column]}\n")
             
     except Exception as e:
         logger.error(f"Classification failed: {e}")
