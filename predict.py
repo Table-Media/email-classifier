@@ -35,8 +35,14 @@ def load_classifier(model_path: Path):
     
     Returns:
         The loaded classifier model
+    
+    Raises:
+        FileNotFoundError: If model file doesn't exist
     """
     try:
+        # Ensure data directory exists
+        model_path.parent.mkdir(parents=True, exist_ok=True)
+        
         logger.info(f"Loading model from {model_path}")
         return joblib.load(model_path)
     except Exception as e:
@@ -72,7 +78,7 @@ def predict_texts(classifier, texts: List[str], batch_size: int = 1000) -> List[
 @click.option(
     "--model-path",
     type=click.Path(path_type=Path),
-    default="german_text_classifier.joblib",
+    default="data/output.joblib",
     help="Path to trained model file (.joblib)"
 )
 @click.option(
