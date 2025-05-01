@@ -133,15 +133,25 @@ The classifier typically achieves:
 - Prediction time: < 5 ms per text
 - Accuracy: > 90% on typical email data
 
-## How It Works
+## How It Works (Simple Explanation)
 
-The classifier uses a simple but effective approach:
-1. Text preprocessing with TF-IDF vectorization
-   - Captures unigrams and bigrams (1-2 word sequences)
-   - Applies frequency-based filtering
-2. Classification with Logistic Regression
-   - Fast training and prediction
-   - Good explainability (can see which words/phrases are most important)
+Imagine the classifier is like a very smart baby learning to sort toys:
+
+1. **Learning Words**:
+   - First it looks at all the example emails you gave it
+   - It learns which words appear often in each category (like "Rechnung" in invoices or "Newsletter" in newsletters)
+
+2. **Counting Words**:
+   - When you give it a new email, it counts how many "invoice words" vs "newsletter words" it contains
+   - It pays extra attention to word pairs (like "bitte um" or "sehr geehrte")
+
+3. **Making a Guess**:
+   - Based on which words appear most, it picks the most likely category
+   - It's like guessing what color a toy is by looking at its shape
+
+4. **Getting Better**:
+   - The more good examples you show it, the better it gets at guessing
+   - It remembers thousands of words and how they relate to each category
 
 ## Customization
 
