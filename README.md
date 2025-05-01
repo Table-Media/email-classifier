@@ -24,11 +24,10 @@ A simple, fast, and efficient classifier for German email texts. This tool can c
 
 This package includes the following files:
 
-1. `data/train.csv` - Training dataset with labeled examples
-2. `data/test.csv` - Test dataset for evaluation
-3. `classify.py` - Main script for training and evaluating the model
-4. `predict.py` - Lightweight script for making predictions on new texts
-5. `README.md` - This documentation file
+1. `data/train.csv` - Training dataset with labeled examples (text and label columns)
+2. `classify.py` - Script for training the model (uses train/test split)
+3. `predict.py` - Script for batch predictions on CSV files
+4. `README.md` - This documentation file
 
 ## Quick Start
 
@@ -37,35 +36,37 @@ This package includes the following files:
 First, train the classifier using the provided dataset:
 
 ```bash
-uv run classify.py
+uv run classify.py data/train.csv
 ```
 
 This will:
-- Load the training and test data
+- Load the training data
 - Train a text classification model
-- Evaluate the model on the test data
-- Save the trained model to `german_email_classifier.joblib`
-- Display performance metrics and feature importance
-- Create a confusion matrix visualization
+- Evaluate the model on a test split
+- Save the trained model to `german_text_classifier.joblib` by default
+- Display classification report with performance metrics
 
-### 2. Classify New Emails
+### 2. Classify New Texts
 
-#### Classify a Single Text
+#### Classify Texts from a CSV File
 
 ```bash
-python predict_emails.py text "Ihre Bestellung #45678 wurde versandt und wird in Kürze geliefert."
+uv run predict.py --input-csv your_texts.csv
 ```
 
-#### Classify Multiple Texts from a CSV File
+Optional arguments:
+- `--model-path`: Path to model file (default: german_text_classifier.joblib)
+- `--output-csv`: Output file path (default: overwrites input)
+- `--text-column`: Column name containing texts (default: "text")
+- `--prediction-column`: Column name for predictions (default: "predicted_label")
 
+Example with all options:
 ```bash
-python predict_emails.py file your_emails.csv
-```
-
-By default, the script looks for a column named 'text' in your CSV. If your column has a different name, specify it:
-
-```bash
-python predict_emails.py file your_emails.csv email_body
+uv run predict.py \
+  --input-csv emails.csv \
+  --output-csv classified_emails.csv \
+  --text-column email_body \
+  --prediction-column category
 ```
 
 ## Performance
