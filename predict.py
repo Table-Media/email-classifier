@@ -1,0 +1,126 @@
+# /// script
+# dependencies = [
+#   "joblib",
+#   "click",
+#   "rich",
+#   "pandas",
+#   "scikit-learn",
+# ]
+# ///
+
+import logging
+from pathlib import Path
+from typing import List, Optional
+
+import click
+import joblib
+import pandas as pd
+from rich.console import Console
+from rich.logging import RichHandler
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+    handlers=[RichHandler(rich_tracebacks=True)]
+)
+logger = logging.getLogger(__name__)
+console = Console()
+
+def load_classifier(model_path: Path):
+    """Load a trained classifier model from disk.
+    
+    Args:
+        model_path: Path to the saved .joblib model file
+    
+    Returns:
+        The loaded classifier model
+    """
+    try:
+        logger.info(f"Loading model from {model_path}")
+        return joblib.load(model_path)
+    except Exception as e:
+        logger.error(f"Failed to load model: {e}")
+        raise
+
+def predict_texts(classifier, texts: List[str]) -> List[str]:
+    """Classify a list of German texts using the loaded model.
+    
+    Args:
+        classifier: The trained classifier model
+        texts: List of German text strings to classify
+    
+    Returns:
+        List of predicted classifications
+    """
+    logger.info(f"Classifying {len(texts)} texts")
+    return classifier.predict(texts)
+
+@click.command()
+@click.option(
+    "--model-path",
+    type=click.Path(path_type=Path),
+    default="german_text_classifier.joblib",
+    help="Path to trained model file (.joblib)"
+)
+@click.option(
+    "--input-csv",
+    type=click.Path(path_type=Path),
+    required=True,
+    help="Path to input CSV file"
+)
+@click.option(
+    "--output-csv",
+    type=click.Path(path_type=Path),
+    help="Path to output CSV file (default: overwrite input)"
+)
+@click.option(
+    "--text-column",
+    default="text",
+    help="Name of column containing text to classify"
+)
+@click.option(
+    "--prediction-column",
+    default="predicted_label",
+    help="Name of column to store predictions"
+)
+def main(
+    model_path: Path,
+    input_csv: Path,
+    output_csv: Optional[Path],
+    text_column: str,
+    prediction_column: str
+):
+    """Classify German texts from a CSV file using a trained model."""
+    try:
+        # Read input CSV
+        logger.info(f"Reading input from {input_csv}")
+        df = pd.read_csv(input_csv)
+        
+        # Validate text column exists
+        if text_column not in df.columns:
+            raise ValueError(f"Column '{text_column}' not found in CSV")
+            
+        # Load model and predict
+        classifier = load_classifier(model_path)
+        texts = df[text_column].tolist()
+        predictions = predict_texts(classifier, texts)
+        
+        # Save predictions
+        df[prediction_column] = predictions
+        output_path = output_csv if output_csv else input_csv
+        df.to_csv(output_path, index=False)
+        logger.info(f"Saved predictions to {output_path}")
+        
+        # Show sample results
+        console.print("\n[bold]Sample Classification Results:[/bold]")
+        for _, row in df.head(5).iterrows():
+            console.print(f"- [cyan]Text:[/cyan] {row[text_column][:50]}...")
+            console.print(f"  [green]Prediction:[/green] {row[prediction_column]}\n")
+            
+    except Exception as e:
+        logger.error(f"Classification failed: {e}")
+        raise click.Abort()
+
+if __name__ == "__main__":
+    main()
