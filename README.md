@@ -1,4 +1,4 @@
-# German Email Classifier
+# Email Classifier
 
 A simple, fast, and efficient classifier for German email texts. This tool can categorize emails into different classes such as:
 
